@@ -89,49 +89,56 @@ class BrightnessThresholder(Node):
         sort_right_points = np.lexsort((np_right_points[:,0], np_right_points[:,1]))
         sort_left_points = np_left_points[sort_left_points] 
         sort_right_points = np_right_points[sort_right_points] 
+
+        for point in sort_left_points:
+            cv2.circle(self.left_img, point, 2, [0, 0, 255], cv2.FILLED)
+
+        for point in sort_right_points:
+            cv2.circle(self.right_img, point, 2, [0, 0, 255], cv2.FILLED)
+
         # print("===========================================")
         # print(sort_left_points, "\n")
         # print(sort_right_points)
 
         # print("-------------------------------------------")
-        # start = time.process_time()
-        # try:
-        #     transf, (s_list, t_list) = aa.find_transform(sort_left_points, sort_right_points)
-        #     end = time.process_time()
-        #     print(end-start)
-        # except Exception as ee:
-        #     print(ee)
-        #     self.n += 1
-        #     print("error", self.n)
-        #     return
+        start = time.process_time()
+        try:
+            transf, (s_list, t_list) = aa.find_transform(sort_left_points, sort_right_points)
+            end = time.process_time()
+            print(end-start)
+        except Exception as ee:
+            print(ee)
+            self.n += 1
+            print("error", self.n)
+            return
         # print(*[str(s_list[i]) + "==" + str(t_list[i]) + "\n" for i in range(len(s_list))])
-        matched_left: List[Point] = []#[Point(x=float(s_list[i][0]), y=float(s_list[i][1]), z = float(0)) for i in range(len(s_list))]
-        matched_right: List[Point] = []#[Point(x=float(t_list[i][0]), y=float(t_list[i][1]), z = float(0)) for i in range(len(t_list))]
+        matched_left: List[Point] = [Point(x=float(s_list[i][0]), y=float(s_list[i][1]), z = float(0)) for i in range(len(s_list))]
+        matched_right: List[Point] = [Point(x=float(t_list[i][0]), y=float(t_list[i][1]), z = float(0)) for i in range(len(t_list))]
         # print(matched_left)
         # print(matched_right)
 
         c = 1
-        # for i in range(len(s_list)):
-        #     colour = cv2.cvtColor(np.uint8([[[360/e*c, 255, 255]]]), cv2.COLOR_HSV2BGR)
-        #     colour = tuple(colour[0][0])
-        #     colour = ( int (colour [ 0 ]), int (colour [ 1 ]), int (colour [ 2 ])) 
-        #     cv2.circle(self.left_img, s_list[i], POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
-        #     cv2.circle(self.right_img, t_list[i], POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
-        #     c += 1
+        for i in range(len(s_list)):
+            colour = cv2.cvtColor(np.uint8([[[360/e*c, 255, 255]]]), cv2.COLOR_HSV2BGR)
+            colour = tuple(colour[0][0])
+            colour = ( int (colour [ 0 ]), int (colour [ 1 ]), int (colour [ 2 ])) 
+            cv2.circle(self.left_img, s_list[i], POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
+            cv2.circle(self.right_img, t_list[i], POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
+            c += 1
 
-        for left_point in sort_left_points:
-            for i, right_point in enumerate(sort_right_points):
-                if abs(left_point[1] - right_point[1]) < POINT_MATCH_MARGIN:
-                    colour = cv2.cvtColor(np.uint8([[[360/e*c, 255, 255]]]), cv2.COLOR_HSV2BGR)
-                    colour = tuple(colour[0][0])
-                    colour = ( int (colour [ 0 ]), int (colour [ 1 ]), int (colour [ 2 ])) 
-                    cv2.circle(self.left_img, left_point, POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
-                    cv2.circle(self.right_img, right_point, POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
-                    matched_left.append(Point(x=float(left_point[0]), y=float(left_point[1]), z = float(0)))
-                    matched_right.append(Point(x=float(right_point[0]), y=float(right_point[1]), z = float(0.0)))
-                    sort_right_points = np.delete(sort_right_points, i, 0)
-                    c += 1
-                    break
+        # for left_point in sort_left_points:
+        #     for i, right_point in enumerate(sort_right_points):
+        #         if abs(left_point[1] - right_point[1]) < POINT_MATCH_MARGIN:
+        #             colour = cv2.cvtColor(np.uint8([[[360/e*c, 255, 255]]]), cv2.COLOR_HSV2BGR)
+        #             colour = tuple(colour[0][0])
+        #             colour = ( int (colour [ 0 ]), int (colour [ 1 ]), int (colour [ 2 ])) 
+        #             cv2.circle(self.left_img, left_point, POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
+        #             cv2.circle(self.right_img, right_point, POINT_MATCH_MARGIN//2, colour, cv2.FILLED)
+        #             matched_left.append(Point(x=float(left_point[0]), y=float(left_point[1]), z = float(0)))
+        #             matched_right.append(Point(x=float(right_point[0]), y=float(right_point[1]), z = float(0.0)))
+        #             sort_right_points = np.delete(sort_right_points, i, 0)
+        #             c += 1
+        #             break
         out = MatchedMarkers()
         out.header = header
         out.left = matched_left
